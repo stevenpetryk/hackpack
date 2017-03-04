@@ -1,12 +1,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/1.1.0/highlightjs-line-numbers.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Source+Code+Pro" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css" />
+<link rel="stylesheet" href="main.css" />
 
-# Problem Solving Hack Pack
+# General Programming
 
-## General Programming
-
-### Comparable
+## Comparable
 
 Sorting from smallest to largest:
 
@@ -17,9 +19,11 @@ public int compareTo (Thing other) {
 }
 ```
 
-## Greedy Algorithms
+<div class="page-break"></div>
 
-### Room scheduling
+# Greedy Algorithms
+
+## Room scheduling
 
 Given a single room to schedule, and a list of requests, the goal of this problem is to
 maximize the total number of events scheduled. Each request simply consists of the
@@ -57,3 +61,5 @@ class Room implements Comparable<Room> {
 ```
 
 To modify this for multiple rooms, just spill over into the next room when the current room can't be scheduled.
+
+<div class="page-break"></div>
