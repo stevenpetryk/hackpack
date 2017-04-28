@@ -45,11 +45,35 @@ public int compareTo (Thing other) {
 # Combination Generation
 <div class="page-break"></div>
 
+<!--
+```java
+class MathUtils {
+```
+-->
+
 # GCD
-<div class="page-break"></div>
+
+```java
+public static int gcd (int a, int b) {
+  return b == 0 ? a : gcd(b, a%b);
+}
+```
 
 # LCM
+
+```java
+public static int lcm (int a, int b) {
+  return a * (b / gcd(a, b));
+}
+```
+
 <div class="page-break"></div>
+
+<!--
+```java
+}
+```
+-->
 
 # Kruskal's Algorithm
 <div class="page-break"></div>
@@ -128,6 +152,8 @@ class Knapsack {
 public class hackpack {
   public static void main (String args[]) {
     try {
+      testGCD();
+      testLCM();
       testKnapsack();
 
       handleSuccess();
@@ -135,6 +161,18 @@ public class hackpack {
       handleTestFailure(e);
       System.exit(1);
     }
+  }
+
+  public static void testGCD () throws TestFailure {
+    assertEqual(MathUtils.gcd(1, 1), 1);
+    assertEqual(MathUtils.gcd(5, 10), 5);
+    assertEqual(MathUtils.gcd(15, 3), 3);
+  }
+
+  public static void testLCM () throws TestFailure {
+    assertEqual(MathUtils.lcm(1, 1), 1);
+    assertEqual(MathUtils.lcm(5, 10), 10);
+    assertEqual(MathUtils.lcm(8, 3), 24);
   }
 
   public static void testKnapsack () throws TestFailure {
