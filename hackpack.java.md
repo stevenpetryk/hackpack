@@ -75,13 +75,58 @@ public static int lcm (int a, int b) {
 ```
 -->
 
-# Kruskal's Algorithm
+# Graphs
+
+```java
+class Node {
+  public List<Node> children;
+  public Node () { children = new ArrayList<Node>(); }
+
+  public Node addChild (Node child) {
+    children.add(child);
+    child.children.add(this); // if undirected graph
+
+    return this;
+  }
+}
+```
+
+## Kruskal's Algorithm
 <div class="page-break"></div>
 
-# Depth First Search
+## Depth First Search
 <div class="page-break"></div>
 
-# Breadth First Search
+## Breadth First Search
+
+```java
+class BFS {
+  public static int distanceToNode (Node start, Node target) {
+    Set<Node> visited = new HashSet<>();
+    Deque<NodeWithDistance> queue = new ArrayDeque<>();
+    queue.add(new NodeWithDistance(start, 0));
+
+    while (!queue.isEmpty()) {
+      NodeWithDistance current = queue.poll();
+
+      if (!visited.add(current.node)) continue;
+      if (current.node == target) return current.distance;
+
+      for (Node child : current.node.children) {
+        queue.add(new NodeWithDistance(child, current.distance + 1));
+      }
+    }
+
+    return -1;
+  }
+
+  static class NodeWithDistance {
+    Node node; int distance;
+    public NodeWithDistance (Node _node, int _distance) { node = _node; distance = _distance; }
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Topological Sort
@@ -150,32 +195,50 @@ class Knapsack {
 
 ```java
 public class hackpack {
-  public static void main (String args[]) {
-    try {
-      testGCD();
-      testLCM();
-      testKnapsack();
+  public static boolean failures = false;
 
+  public static void main (String args[]) {
+    testGCD();
+    testLCM();
+    testBFS();
+    testKnapsack();
+
+    if (!failures) {
       handleSuccess();
-    } catch (TestFailure e) {
-      handleTestFailure(e);
-      System.exit(1);
     }
   }
 
-  public static void testGCD () throws TestFailure {
+  public static void testGCD () {
     assertEqual(MathUtils.gcd(1, 1), 1);
     assertEqual(MathUtils.gcd(5, 10), 5);
     assertEqual(MathUtils.gcd(15, 3), 3);
   }
 
-  public static void testLCM () throws TestFailure {
+  public static void testLCM () {
     assertEqual(MathUtils.lcm(1, 1), 1);
     assertEqual(MathUtils.lcm(5, 10), 10);
     assertEqual(MathUtils.lcm(8, 3), 24);
   }
 
-  public static void testKnapsack () throws TestFailure {
+  public static void testBFS () {
+    Node start = new Node();
+    Node reachable = new Node();
+    Node unreachable = new Node();
+
+    start
+      .addChild(new Node())
+      .addChild(new Node())
+      .addChild(
+        new Node()
+          .addChild(reachable)
+          .addChild(new Node())
+      );
+
+    assertEqual(BFS.distanceToNode(start, reachable), 2);
+    assertEqual(BFS.distanceToNode(start, unreachable), -1);
+  }
+
+  public static void testKnapsack () {
     int weights[] = new int[] { 3, 2, 6, 8, 1, 3 };
     int values[] = new int[] { 7, 5, 12, 20, 3, 6 };
 
@@ -198,6 +261,8 @@ public class hackpack {
   }
 
   private static void handleTestFailure (TestFailure e) {
+    failures = true;
+
     String failingTest = "";
 
     outer: for (StackTraceElement element : e.getStackTrace()) {
@@ -209,21 +274,25 @@ public class hackpack {
       }
     }
 
-    System.out.println(ANSI_RED + "× " + failingTest + " failed " + ANSI_RESET);
+    System.out.println(ANSI_RED + "× " + failingTest + " failed: " + e.getMessage() + ANSI_RESET);
 
     e.printStackTrace();
   }
 
-  private static void assertEqual (int a, int b) throws TestFailure {
-    throwOnFalse(a == b);
-  }
-
-  private static void throwOnFalse(boolean value) throws TestFailure {
-    if (!value) {
-      throw new TestFailure();
+  private static void assertEqual (int a, int b) {
+    try {
+      if (a != b) {
+        throw new TestFailure(String.format("Expected %d to equal %d", a, b));
+      }
+    } catch (TestFailure e) {
+      handleTestFailure(e);
     }
   }
 }
 
-class TestFailure extends Exception {}
+class TestFailure extends Exception {
+  public TestFailure (String message) {
+    super(message);
+  }
+}
 ```
