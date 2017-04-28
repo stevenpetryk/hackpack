@@ -1,2 +1,6 @@
 all:
-		pandoc hackpack.md -o hackpack.html --no-highlight
+		pandoc hackpack.java.md -o hackpack.html --no-highlight
+		make test
+
+test:
+		./run-md hackpack.java.md

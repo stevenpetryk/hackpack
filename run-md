@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#
+# Run code embeded into MarkDown documents
+#
+
+shopt -s expand_aliases
+
+# Say something
+alias say='echo 1>&2'
+
+# Filter to extract code inside ``` blocks
+function extract_code {
+    local line
+    local -i onblock=0
+
+    local IFS=''
+    while read -r line; do
+        if [[ $line == '```'* ]]; then
+            if (( onblock )); then
+                onblock=0
+            else
+                onblock=1
+            fi
+            echo
+        else
+            if (( onblock )); then
+                echo "$line"    # copy code inside block
+            else
+                echo    # replace other text with empty lines
+            fi
+        fi
+    done
+}
+
+# Parse arguments
+#   $1 is a MarkDown document (name.lang.md)
+declare -r PROGRAM=${1?Expected program filename}
+shift
+
+declare -r CODE=/tmp/${PROGRAM%.md}
+declare -r RUNNING=">>> Running $PROGRAM; temporary files left at /tmp:"
+
+# Run extracted program
+extract_code < "$PROGRAM" > "$CODE"
+
+case "$CODE" in
+    *.sh)
+        say "$RUNNING ${PROGRAM%.md}"
+        bash "$CODE" "$@"
+        ;;
+    *.py)
+        say "$RUNNING ${PROGRAM%.md}"
+        python "$CODE" "$@"
+        ;;
+    *.pl)
+        say "$RUNNING ${PROGRAM%.md}"
+        perl "$CODE" "$@"
+        ;;
+    *.c)
+        say "$RUNNING ${PROGRAM%.md} and a.out"
+        gcc "$CODE" -o /tmp/a.out && /tmp/a.out "$@"
+        ;;
+    *.cpp|*.cxx)
+        say "$RUNNING ${PROGRAM%.md} and a.out"
+        g++ "$CODE" -o /tmp/a.out && /tmp/a.out "$@"
+        ;;
+    *.java)
+        say "$RUNNING ${PROGRAM%.md} and ${PROGRAM%.java.md}.class"
+        javac -d /tmp "$CODE" && cd /tmp && java "${PROGRAM%.java.md}" "$@"
+        ;;
+    *)  # unsupported language: only extract code
+        cat "$CODE"
+        ;;
+esac
+
+exit
+
+# vim:ai:et:sw=4:ts=4:syntax=sh
