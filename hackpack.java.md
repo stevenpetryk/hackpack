@@ -39,6 +39,119 @@ public int compareTo (Thing other) {
 
 <div class="page-break"></div>
 
+## Geometry classes
+
+```java
+// Code modified from Arup Guha's geometry routines
+// Found at http://www.cs.ucf.edu/~dmarino/progcontests/cop4516/samplecode/Test2DGeo.java
+class Vector2D {
+  public double x, y;
+
+  public Vector2D (double _x, double _y) {
+    x = _x;
+    y = _y;
+  }
+
+  public Vector2D (Point2D start, Point2D end) {
+    x = end.x - start.x;
+    y = end.y - start.y;
+  }
+
+  public double dot (Vector2D other) {
+    return this.x*other.x + this.y*other.y;
+  }
+
+  public double magnitude () {
+    return Math.sqrt(x * x + y * y);
+  }
+
+  public double angle(Vector2D other) {
+    return Math.acos(this.dot(other) / magnitude() / other.magnitude());
+  }
+
+  public double signedCrossMag(Vector2D other) {
+    return this.x * other.y - other.x * this.y;
+  }
+
+  public double crossProductMagnitude (Vector2D other) {
+    return Math.abs(signedCrossMag(other));
+  }
+
+  public double referenceAngle () {
+    return Math.atan2(y, x);
+  }
+
+  public boolean isStraightLineTo (Vector2D other) {
+      return crossProductMagnitude(other) == 0;
+  }
+
+  public boolean isRightTurnTo (Vector2D other) {
+      return crossProductMagnitude(other) < 0;
+  }
+}
+```
+
+<div class="page-break"></div>
+
+```java
+class Line {
+    final public static double EPSILON = 1e-9;
+
+    public Point2D p;
+    public Vector2D dir;
+
+    public Line(Point2D start, Point2D end) {
+        p = start;
+        dir = new Vector2D(start, end);
+    }
+
+    public Point2D intersect(Line other) {
+        double den = det(dir.x, -other.dir.x, dir.y, -other.dir.y);
+        if (Math.abs(den) < EPSILON) return null;
+
+        double numLambda = det(other.p.x-p.x, -other.dir.x, other.p.y-p.y, -other.dir.y);
+        return eval(numLambda/den);
+    }
+
+    public double distance(Point2D other) {
+        Vector2D toPt = new Vector2D(p, other);
+        return dir.crossProductMagnitude(toPt) / dir.magnitude();
+    }
+
+    public Point2D eval(double lambda) {
+        return new Point2D(p.x+lambda*dir.x, p.y+lambda*dir.y);
+    }
+
+    public static double det(double a, double b, double c, double d) {
+        return a*d - b*c;
+    }
+}
+
+class Point2D {
+  public double x, y;
+
+  public Point2D(double _x, double _y) {
+    x = _x; y = _y;
+  }
+
+  public boolean isStraightLineTo (Point2D mid, Point2D end) {
+      Vector2D from = new Vector2D(this, mid);
+      Vector2D to = new Vector2D(mid, end);
+
+      return from.isStraightLineTo(to);
+  }
+
+  public boolean isRightTurn(Point2D mid, Point2D end) {
+      Vector2D from = new Vector2D(this, mid);
+      Vector2D to = new Vector2D(mid, end);
+
+      return from.isRightTurnTo(to);
+  }
+}
+```
+
+<div class="page-break"></div>
+
 # Permutation Generation
 <div class="page-break"></div>
 
@@ -186,6 +299,117 @@ class Knapsack {
 <div class="page-break"></div>
 
 # Convex Hull
+
+```java
+class ConvexHullSolver {
+  int numPoints;
+  Queue<Point2D> initialPoints;
+  Queue<Point2D> sortedPoints;
+  Point2D firstPoint;
+
+  public static Comparator<Point2D> getUpperLeftComparator() {
+    return new Comparator<Point2D>() {
+      @Override
+      public int compare(Point2D o1, Point2D o2) {
+        if (o1.y != o2.y) {
+          return Double.compare(o1.y, o2.y);
+        }
+
+        return Double.compare(o1.x, o2.x);
+      }
+    };
+  }
+
+  public static Comparator<Point2D> getReferenceAngleComparator (final Point2D initialPoint) {
+    return new Comparator<Point2D>() {
+      @Override
+      public int compare(Point2D p1, Point2D p2) {
+        Vector2D v1 = new Vector2D(initialPoint, p1);
+        Vector2D v2 = new Vector2D(initialPoint, p2);
+
+        if (p1 == initialPoint) {
+          return -1;
+        }
+
+        if (p2 == initialPoint) {
+          return 1;
+        }
+
+        if (Math.abs(v1.referenceAngle() - v2.referenceAngle()) < 1e-6) {
+          return Double.compare(v1.magnitude(), v2.magnitude());
+        }
+
+        return Double.compare(v2.referenceAngle(), v1.referenceAngle());
+      }
+    };
+  }
+
+  public ConvexHullSolver (int _numPoints) {
+    numPoints = _numPoints;
+    initialPoints = new PriorityQueue<>(numPoints, getUpperLeftComparator());
+  }
+
+  public void addPoint (Point2D point) {
+    initialPoints.add(point);
+  }
+```
+
+<div class="page-break"></div>
+
+```java
+  public Stack<Point2D> solve () {
+    sortPoints();
+
+    Stack<Point2D> pointStack = new Stack<>();
+
+    if (sortedPoints.size() <= 3) {
+      List<Point2D> points = new ArrayList<>(sortedPoints);
+
+      if (points.get(0).isStraightLineTo(points.get(1), points.get(2))) {
+        pointStack.add(points.get(0));
+        pointStack.add(points.get(1));
+      } else {
+        pointStack.addAll(sortedPoints);
+      }
+
+      return pointStack;
+    }
+
+    pointStack.push(sortedPoints.poll());
+    pointStack.push(sortedPoints.poll());
+
+    while (!sortedPoints.isEmpty()) {
+      Point2D endPoint = sortedPoints.poll();
+      Point2D midPoint = pointStack.pop();
+      Point2D prevPoint = pointStack.pop();
+
+      while (!prevPoint.isRightTurn(midPoint, endPoint)) {
+        if (pointStack.isEmpty()) {
+          midPoint = endPoint;
+          endPoint = sortedPoints.poll();
+        } else {
+          midPoint = prevPoint;
+          prevPoint = pointStack.pop();
+        }
+      }
+
+      pointStack.push(prevPoint);
+      pointStack.push(midPoint);
+      pointStack.push(endPoint);
+    }
+
+    return pointStack;
+  }
+
+  public void sortPoints () {
+    firstPoint = initialPoints.peek();
+
+    sortedPoints = new PriorityQueue<>(numPoints, getReferenceAngleComparator(firstPoint));
+    sortedPoints.addAll(initialPoints);
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Point in Polygon
