@@ -82,11 +82,11 @@ class Vector2D {
   }
 
   public boolean isStraightLineTo (Vector2D other) {
-      return crossProductMagnitude(other) == 0;
+    return crossProductMagnitude(other) == 0;
   }
 
   public boolean isRightTurnTo (Vector2D other) {
-      return crossProductMagnitude(other) < 0;
+    return crossProductMagnitude(other) < 0;
   }
 }
 ```
@@ -95,36 +95,36 @@ class Vector2D {
 
 ```java
 class Line {
-    final public static double EPSILON = 1e-9;
+  final public static double EPSILON = 1e-9;
 
-    public Point2D p;
-    public Vector2D dir;
+  public Point2D p;
+  public Vector2D dir;
 
-    public Line(Point2D start, Point2D end) {
-        p = start;
-        dir = new Vector2D(start, end);
-    }
+  public Line(Point2D start, Point2D end) {
+    p = start;
+    dir = new Vector2D(start, end);
+  }
 
-    public Point2D intersect(Line other) {
-        double den = det(dir.x, -other.dir.x, dir.y, -other.dir.y);
-        if (Math.abs(den) < EPSILON) return null;
+  public Point2D intersect(Line other) {
+    double den = det(dir.x, -other.dir.x, dir.y, -other.dir.y);
+    if (Math.abs(den) < EPSILON) return null;
 
-        double numLambda = det(other.p.x-p.x, -other.dir.x, other.p.y-p.y, -other.dir.y);
-        return eval(numLambda/den);
-    }
+    double numLambda = det(other.p.x-p.x, -other.dir.x, other.p.y-p.y, -other.dir.y);
+    return eval(numLambda/den);
+  }
 
-    public double distance(Point2D other) {
-        Vector2D toPt = new Vector2D(p, other);
-        return dir.crossProductMagnitude(toPt) / dir.magnitude();
-    }
+  public double distance(Point2D other) {
+    Vector2D toPt = new Vector2D(p, other);
+    return dir.crossProductMagnitude(toPt) / dir.magnitude();
+  }
 
-    public Point2D eval(double lambda) {
-        return new Point2D(p.x+lambda*dir.x, p.y+lambda*dir.y);
-    }
+  public Point2D eval(double lambda) {
+    return new Point2D(p.x+lambda*dir.x, p.y+lambda*dir.y);
+  }
 
-    public static double det(double a, double b, double c, double d) {
-        return a*d - b*c;
-    }
+  public static double det(double a, double b, double c, double d) {
+    return a*d - b*c;
+  }
 }
 
 class Point2D {
@@ -135,17 +135,17 @@ class Point2D {
   }
 
   public boolean isStraightLineTo (Point2D mid, Point2D end) {
-      Vector2D from = new Vector2D(this, mid);
-      Vector2D to = new Vector2D(mid, end);
+    Vector2D from = new Vector2D(this, mid);
+    Vector2D to = new Vector2D(mid, end);
 
-      return from.isStraightLineTo(to);
+    return from.isStraightLineTo(to);
   }
 
   public boolean isRightTurn(Point2D mid, Point2D end) {
-      Vector2D from = new Vector2D(this, mid);
-      Vector2D to = new Vector2D(mid, end);
+    Vector2D from = new Vector2D(this, mid);
+    Vector2D to = new Vector2D(mid, end);
 
-      return from.isRightTurnTo(to);
+    return from.isRightTurnTo(to);
   }
 }
 ```
