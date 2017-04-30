@@ -196,20 +196,112 @@ public static int lcm (int a, int b) {
 
 ```java
 class Node {
-  public List<Node> children;
-  public Node () { children = new ArrayList<Node>(); }
+  int value;
+  public List<Edge<Node>> children;
+  public Node () { this(0); }
+  public Node (int _value) { value = _value; children = new ArrayList<Edge<Node>>(); }
 
-  public Node addChild (Node child) {
-    children.add(child);
-    child.children.add(this); // if undirected graph
+  public Node addChild (Node child, int weight) {
+    return addChild(child, weight, true);
+  }
+
+  public Node addChild (Node child, int weight, boolean reciprocate) {
+    children.add(new Edge<>(this, child, weight));
+    if (reciprocate) child.addChild(this, weight, false); // if undirected graph
 
     return this;
+  }
+}
+
+class Edge<T> implements Comparable<Edge> {
+  T node, from; int weight;
+  Edge (T _node, int _weight) { this(null, _node, _weight); }
+  Edge (T _from, T _node, int _weight) { from = _from; node = _node; weight = _weight; }
+
+  @Override
+  public int compareTo (Edge other) {
+    return weight - other.weight;
+  }
+}
+```
+
+## Disjoint Set
+
+```java
+class DisjointSet {
+  int[] parent, rank;
+
+  public DisjointSet (int n) {
+    rank = new int[n];
+    parent = new int[n];
+
+    for (int i = 0; i < n; i++) parent[i] = i;
+  }
+
+  public int find (int value) {
+    if (parent[value] != value) {
+      parent[value] = find(parent[value]);
+    }
+
+    return parent[value];
+  }
+
+  public boolean union (int a, int b) {
+    int aRoot = find(a);
+    int bRoot = find(b);
+    if (aRoot == bRoot) return false;
+
+    if (rank[aRoot] < rank[bRoot]) {
+      parent[aRoot] = bRoot;
+    } else if (rank[aRoot] > rank[bRoot]) {
+      parent[bRoot] = aRoot;
+    } else {
+      parent[bRoot] = aRoot;
+      rank[aRoot]++;
+    }
+
+    return true;
   }
 }
 ```
 
 ## Kruskal's Algorithm
+
+```java
+class Kruskal {
+  public static int getMSTWeight (Node start, int numNodes) {
+    Queue<Edge<Node>> edges = new PriorityQueue<>();
+    edges.add(new Edge<Node>(null, start, 0));
+
+    int result = 0;
+
+    DisjointSet ds = new DisjointSet(5);
+
+    int nodesReached = 0;
+
+    while (!edges.isEmpty()) {
+      Edge<Node> currentEdge = edges.poll();
+      Node currentNode = currentEdge.node;
+
+      boolean merged = true;
+      if (currentEdge.from != null) {
+        merged = ds.union(currentEdge.from.value, currentEdge.node.value);
+      }
+
+      if (!merged) continue;
+      nodesReached++;
+      edges.addAll(currentNode.children);
+      result += currentEdge.weight;
+    }
+
+    return nodesReached == numNodes ? result : -1;
+  }
+}
+```
+
 <div class="page-break"></div>
+
+## Primm's Algorithm
 
 ## Depth First Search
 <div class="page-break"></div>
@@ -229,8 +321,8 @@ class BFS {
       if (!visited.add(current.node)) continue;
       if (current.node == target) return current.distance;
 
-      for (Node child : current.node.children) {
-        queue.add(new NodeWithDistance(child, current.distance + 1));
+      for (Edge<Node> edge : current.node.children) {
+        queue.add(new NodeWithDistance(edge.node, current.distance + 1));
       }
     }
 
@@ -421,6 +513,8 @@ public class hackpack {
   public static void main (String args[]) {
     testGCD();
     testLCM();
+    testDisjointSet();
+    testKruskals();
     testBFS();
     testKnapsack();
     testConvexHull();
@@ -442,18 +536,43 @@ public class hackpack {
     assertEqual(MathUtils.lcm(8, 3), 24);
   }
 
+  public static void testDisjointSet () {
+    DisjointSet set = new DisjointSet(5);
+
+    set.union(1, 2);
+    set.union(1, 3);
+    assertEqual(set.find(2), 1);
+    assertEqual(set.find(3), 1);
+    assertEqual(set.find(4), 4);
+  }
+
+  public static void testKruskals () {
+    Node a = new Node(0), b = new Node(1), c = new Node(2), d = new Node(3), e = new Node(4);
+
+    a.addChild(b, 1);
+    a.addChild(c, 2);
+    c.addChild(e, 3);
+    e.addChild(a, 4);
+
+    assertEqual(Kruskal.getMSTWeight(a, 5), -1);
+
+    e.addChild(d, 5);
+    assertEqual(Kruskal.getMSTWeight(a, 5), 11);
+  }
+
   public static void testBFS () {
     Node start = new Node();
     Node reachable = new Node();
     Node unreachable = new Node();
 
     start
-      .addChild(new Node())
-      .addChild(new Node())
+      .addChild(new Node(), 1)
+      .addChild(new Node(), 1)
       .addChild(
         new Node()
-          .addChild(reachable)
-          .addChild(new Node())
+          .addChild(reachable, 1)
+          .addChild(new Node(), 1),
+        1
       );
 
     assertEqual(BFS.distanceToNode(start, reachable), 2);
@@ -524,8 +643,8 @@ public class hackpack {
     e.printStackTrace();
   }
 
-  private static void assertEqual (int a, int b) {
-    assertTrue(a == b, String.format("Expected %d to equal %d", a, b));
+  private static <T> void assertEqual (T a, T b) {
+    assertTrue(a.equals(b), String.format("Expected %s to equal %s", a, b));
   }
 
   private static <T> void assertContains (List<T> haystack, T needle) {

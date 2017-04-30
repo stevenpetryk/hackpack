@@ -67,7 +67,7 @@ case "$CODE" in
         ;;
     *.java)
         say "$RUNNING ${PROGRAM%.md} and ${PROGRAM%.java.md}.class"
-        javac -d /tmp "$CODE" && cd /tmp && java "${PROGRAM%.java.md}" "$@"
+        javac -Xlint:unchecked -d /tmp "$CODE" && cd /tmp && java "${PROGRAM%.java.md}" "$@"
         ;;
     *)  # unsupported language: only extract code
         cat "$CODE"
