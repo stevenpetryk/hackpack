@@ -225,45 +225,7 @@ class Edge<T> implements Comparable<Edge> {
 }
 ```
 
-## Disjoint Set
-
-```java
-class DisjointSet {
-  int[] parent, rank;
-
-  public DisjointSet (int n) {
-    rank = new int[n];
-    parent = new int[n];
-
-    for (int i = 0; i < n; i++) parent[i] = i;
-  }
-
-  public int find (int value) {
-    if (parent[value] != value) {
-      parent[value] = find(parent[value]);
-    }
-
-    return parent[value];
-  }
-
-  public boolean union (int a, int b) {
-    int aRoot = find(a);
-    int bRoot = find(b);
-    if (aRoot == bRoot) return false;
-
-    if (rank[aRoot] < rank[bRoot]) {
-      parent[aRoot] = bRoot;
-    } else if (rank[aRoot] > rank[bRoot]) {
-      parent[bRoot] = aRoot;
-    } else {
-      parent[bRoot] = aRoot;
-      rank[aRoot]++;
-    }
-
-    return true;
-  }
-}
-```
+<div class="page-break"></div>
 
 ## Kruskal's Algorithm
 
@@ -297,11 +259,73 @@ class Kruskal {
     return nodesReached == numNodes ? result : -1;
   }
 }
+
+class DisjointSet {
+  int[] parent, rank;
+
+  public DisjointSet (int n) {
+    rank = new int[n]; parent = new int[n];
+
+    for (int i = 0; i < n; i++) parent[i] = i;
+  }
+
+  public int find (int value) {
+    if (parent[value] != value) parent[value] = find(parent[value]);
+    return parent[value];
+  }
+
+  public boolean union (int a, int b) {
+    int aRoot = find(a);
+    int bRoot = find(b);
+    if (aRoot == bRoot) return false;
+
+    if      (rank[aRoot] < rank[bRoot]) parent[aRoot] = bRoot;
+    else if (rank[aRoot] > rank[bRoot]) parent[bRoot] = aRoot;
+    else {
+      parent[bRoot] = aRoot;
+      rank[aRoot]++;
+    }
+
+    return true;
+  }
+}
 ```
 
 <div class="page-break"></div>
 
-## Primm's Algorithm
+## Prim's Algorithm
+
+```java
+class Prim {
+  public static int getMSTWeight (Node start, int numNodes) {
+    Queue<Edge<Node>> pq = new PriorityQueue<>();
+    Set<Node> visited = new HashSet<>();
+
+    int result = 0;
+
+    pq.add(new Edge<Node>(start, 0));
+
+    while (!pq.isEmpty()) {
+      Edge<Node> current = pq.poll();
+      Node currentNode = current.node;
+      if (!visited.add(currentNode)) continue;
+
+      result += current.weight;
+
+      pq.addAll(currentNode.children);
+    }
+
+    if (visited.size() == numNodes) {
+      return result;
+    } else {
+      return -1;
+    }
+  }
+}
+```
+
+<div class="page-break"></div>
+
 
 ## Depth First Search
 <div class="page-break"></div>
@@ -515,6 +539,7 @@ public class hackpack {
     testLCM();
     testDisjointSet();
     testKruskals();
+    testPrims();
     testBFS();
     testKnapsack();
     testConvexHull();
@@ -558,6 +583,20 @@ public class hackpack {
 
     e.addChild(d, 5);
     assertEqual(Kruskal.getMSTWeight(a, 5), 11);
+  }
+
+  public static void testPrims () {
+    Node a = new Node(0), b = new Node(1), c = new Node(2), d = new Node(3), e = new Node(4);
+
+    a.addChild(b, 1);
+    a.addChild(c, 2);
+    c.addChild(e, 3);
+    e.addChild(a, 4);
+
+    assertEqual(Prim.getMSTWeight(a, 5), -1);
+
+    e.addChild(d, 5);
+    assertEqual(Prim.getMSTWeight(a, 5), 11);
   }
 
   public static void testBFS () {
