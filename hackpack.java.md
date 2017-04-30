@@ -691,7 +691,7 @@ public class hackpack {
   }
 
   private static <T> void refuteContains (List<T> haystack, T needle) {
-    refute(haystack.contains(needle), String.format("Expected %s to contain %s", haystack, needle));
+    refute(haystack.contains(needle), String.format("Expected %s not to contain %s", haystack, needle));
   }
 
   private static void assertTrue (boolean thing, String message) {
