@@ -82,11 +82,11 @@ class Vector2D {
   }
 
   public boolean isStraightLineTo (Vector2D other) {
-    return crossProductMagnitude(other) == 0;
+    return signedCrossMag(other) == 0;
   }
 
-  public boolean isRightTurnTo (Vector2D other) {
-    return crossProductMagnitude(other) < 0;
+  public boolean isLeftTurnTo (Vector2D other) {
+    return signedCrossMag(other) > 0;
   }
 }
 ```
@@ -145,7 +145,11 @@ class Point2D {
     Vector2D from = new Vector2D(this, mid);
     Vector2D to = new Vector2D(mid, end);
 
-    return from.isRightTurnTo(to);
+    return from.isLeftTurnTo(to);
+  }
+
+  public String toString () {
+    return "<" + x + ", " + y + ">";
   }
 }
 ```
@@ -307,13 +311,11 @@ class ConvexHullSolver {
   Queue<Point2D> sortedPoints;
   Point2D firstPoint;
 
-  public static Comparator<Point2D> getUpperLeftComparator() {
+  public static Comparator<Point2D> getLowerLeftComparator() {
     return new Comparator<Point2D>() {
       @Override
       public int compare(Point2D o1, Point2D o2) {
-        if (o1.y != o2.y) {
-          return Double.compare(o1.y, o2.y);
-        }
+        if (o1.y != o2.y) return Double.compare(o1.y, o2.y);
 
         return Double.compare(o1.x, o2.x);
       }
@@ -324,29 +326,24 @@ class ConvexHullSolver {
     return new Comparator<Point2D>() {
       @Override
       public int compare(Point2D p1, Point2D p2) {
+        if (p1 == initialPoint) return -1;
+        if (p2 == initialPoint) return 1;
+
         Vector2D v1 = new Vector2D(initialPoint, p1);
         Vector2D v2 = new Vector2D(initialPoint, p2);
 
-        if (p1 == initialPoint) {
-          return -1;
-        }
-
-        if (p2 == initialPoint) {
-          return 1;
-        }
-
-        if (Math.abs(v1.referenceAngle() - v2.referenceAngle()) < 1e-6) {
+        if (Math.abs(v1.referenceAngle() - v2.referenceAngle()) < 1e-4) {
           return Double.compare(v1.magnitude(), v2.magnitude());
         }
 
-        return Double.compare(v2.referenceAngle(), v1.referenceAngle());
+        return Double.compare(v1.referenceAngle(), v2.referenceAngle());
       }
     };
   }
 
   public ConvexHullSolver (int _numPoints) {
     numPoints = _numPoints;
-    initialPoints = new PriorityQueue<>(numPoints, getUpperLeftComparator());
+    initialPoints = new PriorityQueue<>(numPoints, getLowerLeftComparator());
   }
 
   public void addPoint (Point2D point) {
@@ -426,6 +423,7 @@ public class hackpack {
     testLCM();
     testBFS();
     testKnapsack();
+    testConvexHull();
 
     if (!failures) {
       handleSuccess();
@@ -472,6 +470,29 @@ public class hackpack {
     assertEqual(Knapsack.knapsack(23, weights, values, false), 53);
   }
 
+  public static void testConvexHull () {
+    ConvexHullSolver solver = new ConvexHullSolver(5);
+    List<Point2D> points = new ArrayList<>();
+
+    Point2D topLeft   = new Point2D(2, 0), topRight   = new Point2D(2, 2),
+            lowerLeft = new Point2D(0, 0), lowerRight = new Point2D(0, 2),
+            middle    = new Point2D(1, 1);
+
+    solver.addPoint(lowerLeft);
+    solver.addPoint(lowerRight);
+    solver.addPoint(topLeft);
+    solver.addPoint(topRight);
+    solver.addPoint(middle);
+
+    Stack<Point2D> hull = solver.solve();
+
+    assertContains(hull, lowerLeft);
+    assertContains(hull, lowerRight);
+    assertContains(hull, topLeft);
+    assertContains(hull, topRight);
+    refuteContains(hull, middle);
+  }
+
   /*
    * Low-level test code. Don't worry about this too much.
    */
@@ -504,13 +525,29 @@ public class hackpack {
   }
 
   private static void assertEqual (int a, int b) {
+    assertTrue(a == b, String.format("Expected %d to equal %d", a, b));
+  }
+
+  private static <T> void assertContains (List<T> haystack, T needle) {
+    assertTrue(haystack.contains(needle), String.format("Expected %s to contain %s", haystack, needle));
+  }
+
+  private static <T> void refuteContains (List<T> haystack, T needle) {
+    refute(haystack.contains(needle), String.format("Expected %s to contain %s", haystack, needle));
+  }
+
+  private static void assertTrue (boolean thing, String message) {
     try {
-      if (a != b) {
-        throw new TestFailure(String.format("Expected %d to equal %d", a, b));
+      if (!thing) {
+        throw new TestFailure(message);
       }
     } catch (TestFailure e) {
       handleTestFailure(e);
     }
+  }
+
+  private static void refute (boolean thing, String message) {
+    assertTrue(!thing, message);
   }
 }
 
