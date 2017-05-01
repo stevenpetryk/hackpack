@@ -474,17 +474,18 @@ class FloydWarshalls {
 			for (int j = 0; j < n; j++)
 				sp[i][j] = (i == j) ? 0 : matrix[i][j];
 
-        for (int k = 1; k <= n; k++)
-    			for (int i = 0; i < n; i++)
-    				for (int j = 0; j < n; j++)
-    					sp[i][j] = Math.min(sp[i][j], sp[i][k-1] + sp[k-1][j]);
-
-     return sp;
+    // Floyd-Warshall's    
+    for (int k = 1; k <= n; k++)
+			for (int i = 0; i < n; i++)
+				for (int j = 0; j < n; j++)
+					sp[i][j] = Math.min(sp[i][j], sp[i][k-1] + sp[k-1][j]);
 
     // Negative cycle detection.
-    // for (int i = 0; i < n; i++)
-    //   if (sp[i][i][n] < 0)
+    for (int i = 0; i < n; i++)
+      if (sp[i][i] < 0)
+        return new int[1][1];
 
+    return sp;
   }
 }
 
