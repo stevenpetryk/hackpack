@@ -80,7 +80,11 @@ class Point {
     return "<" + x + ", " + y + ">";
   }
 }
+```
 
+<div class="page-break"></div>
+
+```java
 class Vector {
 	public double x, y, z;
 
@@ -458,6 +462,34 @@ class BFS {
 <div class="page-break"></div>
 
 # Floyd-Warshall's Algorithm
+
+```java
+
+class FloydWarshalls {
+  public static int[][] floydwarshalls(int[][] matrix) {
+    int n = matrix.length;
+    int[][] sp = new int[n][n];
+
+    for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				sp[i][j] = (i == j) ? 0 : matrix[i][j];
+
+        for (int k = 1; k <= n; k++)
+    			for (int i = 0; i < n; i++)
+    				for (int j = 0; j < n; j++)
+    					sp[i][j] = Math.min(sp[i][j], sp[i][k-1] + sp[k-1][j]);
+
+     return sp;
+
+    // Negative cycle detection.
+    // for (int i = 0; i < n; i++)
+    //   if (sp[i][i][n] < 0)
+
+  }
+}
+
+```
+
 <div class="page-break"></div>
 
 # Dijkstra's Algorithm
@@ -692,6 +724,7 @@ public class hackpack {
     testPrims();
     testDFS();
     testBFS();
+    testFloydWarshalls();
     testLCS();
     testKnapsack();
     testConvexHull();
@@ -794,6 +827,22 @@ public class hackpack {
     assertEqual(BFS.distanceToNode(start, unreachable), -1);
   }
 
+  public static void testFloydWarshalls() {
+    // int[][] matrix = new int[4][4];
+    // int[][] result = new int[4][4];
+    //FloydWarshalls fw = new FloydWarshalls(4, matrix);
+
+    int[][] matrix = {{1000000000, 1000000000, -2, 1000000000},
+              {4, 1000000000, 3, 1000000000},
+              {1000000000, 1000000000, 1000000000, 2}, {1000000000, -1, 1000000000, 1000000000}};
+    int[][] result = {{0, -1, -2, 0},
+              {4, 0, 2, 4},
+              {5, 1, 0, 2},
+              {3, -1, 1, 0}};
+
+    assertArraysEqual(FloydWarshalls.floydwarshalls(matrix), result);
+  }
+
   public static void testLCS () {
     String x = "123456789";
     String y = "13597341234569";
@@ -868,6 +917,10 @@ public class hackpack {
 
   private static <T> void assertEqual (T a, T b) {
     assertTrue(a.equals(b), String.format("Expected %s to equal %s", a, b));
+  }
+
+  private static <T> void assertArraysEqual (T[] a, T[] b) {
+    assertTrue(Arrays.deepEquals(a, b), "Expected given graph array to match resulting array.");
   }
 
   private static <T> void assertContains (List<T> haystack, T needle) {
