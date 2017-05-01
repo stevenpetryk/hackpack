@@ -328,6 +328,28 @@ class Prim {
 
 
 ## Depth First Search
+```java
+class DFS {
+  public static boolean canReachNode (Node start, Node target) {
+    Set<Node> visited = new HashSet<>();
+    Deque<Node> queue = new ArrayDeque<>();
+    queue.push(start);
+
+    while (!queue.isEmpty()) {
+      Node current = queue.pop();
+
+      if (!visited.add(current)) continue;
+      if (current == target) return true;
+
+      for (Edge<Node> edge : current.children) {
+        queue.push(edge.node);
+      }
+    }
+
+    return false;
+  }
+}
+```
 <div class="page-break"></div>
 
 ## Breadth First Search
@@ -563,6 +585,7 @@ public class hackpack {
     testDisjointSet();
     testKruskals();
     testPrims();
+    testDFS();
     testBFS();
     testLCS();
     testKnapsack();
@@ -621,6 +644,25 @@ public class hackpack {
 
     e.addChild(d, 5);
     assertEqual(Prim.getMSTWeight(a, 5), 11);
+  }
+
+  public static void testDFS () {
+    Node start = new Node();
+    Node reachable = new Node();
+    Node unreachable = new Node();
+
+    start
+      .addChild(new Node(), 1)
+      .addChild(new Node(), 1)
+      .addChild(
+        new Node()
+          .addChild(reachable, 1)
+          .addChild(new Node(), 1),
+        1
+      );
+
+    assertTrue(DFS.canReachNode(start, reachable), "Expected node to be reachable");
+    refute(DFS.canReachNode(start, unreachable), "Expected node to be unreachable");
   }
 
   public static void testBFS () {
