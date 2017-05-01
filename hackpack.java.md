@@ -381,6 +381,29 @@ class BFS {
 <div class="page-break"></div>
 
 # Longest Common Subsequence
+```java
+class LCS {
+  public static int longestCommonSubsequenceLength (String x, String y) {
+    int lengths[][] = new int[x.length() + 1][y.length() + 1];
+
+    Arrays.fill(lengths[0], 0);
+    for (int i = 0; i < lengths.length; i++) lengths[i][0] = 0;
+
+    for (int i = 1; i < lengths.length; i++) {
+      for (int j = 1; j < lengths[0].length; j++) {
+        if (x.charAt(i - 1) == y.charAt(j - 1)) {
+          lengths[i][j] = lengths[i - 1][j - 1] + 1;
+        } else {
+          lengths[i][j] = Math.max(lengths[i - 1][j], lengths[i][j - 1]);
+        }
+      }
+    }
+
+    return lengths[lengths.length - 1][lengths[0].length - 1];
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Knapsack DP
@@ -541,6 +564,7 @@ public class hackpack {
     testKruskals();
     testPrims();
     testBFS();
+    testLCS();
     testKnapsack();
     testConvexHull();
 
@@ -616,6 +640,14 @@ public class hackpack {
 
     assertEqual(BFS.distanceToNode(start, reachable), 2);
     assertEqual(BFS.distanceToNode(start, unreachable), -1);
+  }
+
+  public static void testLCS () {
+    String x = "123456789";
+    String y = "13597341234569";
+                    // ^^^^^^^
+
+    assertEqual(LCS.longestCommonSubsequenceLength(x, y), 7);
   }
 
   public static void testKnapsack () {
