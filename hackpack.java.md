@@ -202,6 +202,32 @@ class Plane {
 <div class="page-break"></div>
 
 # Permutation Generation
+
+Example: print out all alphabetic strings of a given length.
+
+```java
+class WordInventor {
+  static List<String> results;
+
+  public static List<String> generateCombinations (int length) {
+    results = new ArrayList<String>();
+    generateCombinations(length, "", 0);
+    return results;
+  }
+
+  public static void generateCombinations (int length, String accumulator, int k) {
+    if (k == length) {
+      results.add(accumulator);
+      return;
+    }
+
+    for (char c = 'a'; c <= 'z'; c++) {
+      generateCombinations(length, accumulator + c, k + 1);
+    }
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Combination Generation
@@ -370,7 +396,6 @@ class Prim {
 ```
 
 <div class="page-break"></div>
-
 
 ## Depth First Search
 ```java
@@ -659,6 +684,7 @@ public class hackpack {
   public static boolean failures = false;
 
   public static void main (String args[]) {
+    testCombinationGeneration();
     testGCD();
     testLCM();
     testDisjointSet();
@@ -673,6 +699,11 @@ public class hackpack {
     if (!failures) {
       handleSuccess();
     }
+  }
+
+  public static void testCombinationGeneration () {
+    List<String> results = WordInventor.generateCombinations(3);
+    assertEqual(results.size(), (int)Math.pow(26, 3));
   }
 
   public static void testGCD () {
