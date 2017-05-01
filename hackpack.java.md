@@ -921,7 +921,10 @@ public class hackpack {
   }
 
   private static <T> void assertArraysEqual (T[] a, T[] b) {
-    assertTrue(Arrays.deepEquals(a, b), "Expected given graph array to match resulting array.");
+    assertTrue(
+      Arrays.deepEquals(a, b),
+      String.format("Expected %s to match %s", Arrays.deepToString(a), Arrays.deepToString(b))
+    );
   }
 
   private static <T> void assertContains (List<T> haystack, T needle) {
