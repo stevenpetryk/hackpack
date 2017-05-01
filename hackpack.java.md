@@ -44,36 +44,82 @@ public int compareTo (Thing other) {
 ```java
 // Code modified from Arup Guha's geometry routines
 // Found at http://www.cs.ucf.edu/~dmarino/progcontests/cop4516/samplecode/Test2DGeo.java
-class Vector2D {
-  public double x, y;
 
-  public Vector2D (double _x, double _y) {
-    x = _x;
-    y = _y;
+class Point {
+  public double x, y, z;
+
+  public Point(double _x, double _y) {
+    this(_x, _y, 0);
   }
 
-  public Vector2D (Point2D start, Point2D end) {
+  public Point(double _x, double _y, double _z) {
+    x = _x;
+    y = _y;
+    z = _z;
+  }
+
+  public boolean isStraightLineTo (Point mid, Point end) {
+    Vector from = new Vector(this, mid);
+    Vector to = new Vector(mid, end);
+
+    return from.isStraightLineTo(to);
+  }
+
+  public boolean isRightTurn(Point mid, Point end) {
+    Vector from = new Vector(this, mid);
+    Vector to = new Vector(mid, end);
+
+    return from.isLeftTurnTo(to);
+  }
+
+  public Vector getVector(Point to) {
+    return new Vector(to.x - x, to.y - y, to.z - z);
+  }
+
+  public String toString () {
+    return "<" + x + ", " + y + ">";
+  }
+}
+
+class Vector {
+	public double x, y, z;
+
+  public Vector(double _x, double _y) {
+    this(_x, _y, 0);
+  }
+
+	public Vector(double _x, double _y, double _z) {
+		x = _x;
+		y = _y;
+		z = _z;
+	}
+
+  public Vector (Point start, Point end) {
     x = end.x - start.x;
     y = end.y - start.y;
   }
 
-  public double dot (Vector2D other) {
-    return this.x*other.x + this.y*other.y;
+  public double dot (Vector other) {
+    return this.x * other.x + this.y * other.y + this.z * other.z;
   }
 
-  public double magnitude () {
-    return Math.sqrt(x * x + y * y);
-  }
+	public Vector crossProduct(Vector other) {
+		return new Vector((y * other.z) - (other.y * z), (z * other.x) - (other.z * x), (x * other.y) - (other.x * y));
+	}
 
-  public double angle(Vector2D other) {
+	public double magnitude() {
+		return Math.sqrt((x * x) + (y * y) + (z * z));
+	}
+
+  public double angle(Vector other) {
     return Math.acos(this.dot(other) / magnitude() / other.magnitude());
   }
 
-  public double signedCrossMag(Vector2D other) {
+  public double signedCrossMag(Vector other) {
     return this.x * other.y - other.x * this.y;
   }
 
-  public double crossProductMagnitude (Vector2D other) {
+  public double crossProductMagnitude (Vector other) {
     return Math.abs(signedCrossMag(other));
   }
 
@@ -81,11 +127,11 @@ class Vector2D {
     return Math.atan2(y, x);
   }
 
-  public boolean isStraightLineTo (Vector2D other) {
+  public boolean isStraightLineTo (Vector other) {
     return signedCrossMag(other) == 0;
   }
 
-  public boolean isLeftTurnTo (Vector2D other) {
+  public boolean isLeftTurnTo (Vector other) {
     return signedCrossMag(other) > 0;
   }
 }
@@ -97,15 +143,16 @@ class Vector2D {
 class Line {
   final public static double EPSILON = 1e-9;
 
-  public Point2D p;
-  public Vector2D dir;
+  public Point p, end;
+  public Vector dir;
 
-  public Line(Point2D start, Point2D end) {
-    p = start;
-    dir = new Vector2D(start, end);
+  public Line(Point _start, Point _end) {
+    p = _start;
+    end = _end;
+    dir = new Vector(p, end);
   }
 
-  public Point2D intersect(Line other) {
+  public Point intersect(Line other) {
     double den = det(dir.x, -other.dir.x, dir.y, -other.dir.y);
     if (Math.abs(den) < EPSILON) return null;
 
@@ -113,44 +160,42 @@ class Line {
     return eval(numLambda/den);
   }
 
-  public double distance(Point2D other) {
-    Vector2D toPt = new Vector2D(p, other);
+  public Point getPoint(double t) {
+    return new Point(p.x + dir.x * t, p.y + dir.y * t, p.z + dir.z * t);
+  }
+
+  public double distance(Point other) {
+    Vector toPt = new Vector(p, other);
     return dir.crossProductMagnitude(toPt) / dir.magnitude();
   }
 
-  public Point2D eval(double lambda) {
-    return new Point2D(p.x+lambda*dir.x, p.y+lambda*dir.y);
+  public Point eval(double lambda) {
+    return new Point(p.x + lambda * dir.x, p.y + lambda * dir.y);
   }
 
   public static double det(double a, double b, double c, double d) {
-    return a*d - b*c;
+    return a * d - b * c;
   }
 }
 
-class Point2D {
-  public double x, y;
+class Plane {
+	public Point a, b, c;
+	public Vector normalVector;
+	public double distanceToOrigin;
 
-  public Point2D(double _x, double _y) {
-    x = _x; y = _y;
-  }
+	public Plane(Point _a, Point _b, Point _c) {
+		a = _a;
+		b = _b;
+		c = _c;
+		Vector v1 = a.getVector(b);
+		Vector v2 = a.getVector(c);
+		normalVector = v1.crossProduct(v2);
+		distanceToOrigin = (normalVector.x * a.x) + (normalVector.y * a.y) + (normalVector.z * a.z);
+	}
 
-  public boolean isStraightLineTo (Point2D mid, Point2D end) {
-    Vector2D from = new Vector2D(this, mid);
-    Vector2D to = new Vector2D(mid, end);
-
-    return from.isStraightLineTo(to);
-  }
-
-  public boolean isRightTurn(Point2D mid, Point2D end) {
-    Vector2D from = new Vector2D(this, mid);
-    Vector2D to = new Vector2D(mid, end);
-
-    return from.isLeftTurnTo(to);
-  }
-
-  public String toString () {
-    return "<" + x + ", " + y + ">";
-  }
+	public boolean onPlane(Point p) {
+		return (normalVector.x * p.x) + (normalVector.y * p.y) + (normalVector.z * p.z) == distanceToOrigin;
+	}
 }
 ```
 
@@ -455,9 +500,43 @@ class Knapsack {
 <div class="page-break"></div>
 
 # Line-Line Intersection
+
+```java
+class LineLineIntersection {
+
+  public static Point intersection(Line line1, Line line2) {
+    return line1.intersect(line2);
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Line-Plane Intersection
+
+```java
+class LinePlaneIntersection {
+  final public static double EPSILON = 1e-9;
+
+  public static Point intersection(Plane p, Line l) {
+
+    double t = (p.normalVector.x * l.dir.x) +
+               (p.normalVector.y * l.dir.y) +
+               (p.normalVector.z * l.dir.z);
+
+    if(Math.abs(t) < EPSILON)
+      return null;
+
+    double parameter = p.distanceToOrigin -
+                       (p.normalVector.x * l.p.x) -
+                       (p.normalVector.y * l.p.y) -
+                       (p.normalVector.z * l.p.z);
+
+    return l.getPoint(parameter / t);
+  }                                  
+}
+
+```
 <div class="page-break"></div>
 
 # Polygon Area
@@ -468,14 +547,14 @@ class Knapsack {
 ```java
 class ConvexHullSolver {
   int numPoints;
-  Queue<Point2D> initialPoints;
-  Queue<Point2D> sortedPoints;
-  Point2D firstPoint;
+  Queue<Point> initialPoints;
+  Queue<Point> sortedPoints;
+  Point firstPoint;
 
-  public static Comparator<Point2D> getLowerLeftComparator() {
-    return new Comparator<Point2D>() {
+  public static Comparator<Point> getLowerLeftComparator() {
+    return new Comparator<Point>() {
       @Override
-      public int compare(Point2D o1, Point2D o2) {
+      public int compare(Point o1, Point o2) {
         if (o1.y != o2.y) return Double.compare(o1.y, o2.y);
 
         return Double.compare(o1.x, o2.x);
@@ -483,15 +562,15 @@ class ConvexHullSolver {
     };
   }
 
-  public static Comparator<Point2D> getReferenceAngleComparator (final Point2D initialPoint) {
-    return new Comparator<Point2D>() {
+  public static Comparator<Point> getReferenceAngleComparator (final Point initialPoint) {
+    return new Comparator<Point>() {
       @Override
-      public int compare(Point2D p1, Point2D p2) {
+      public int compare(Point p1, Point p2) {
         if (p1 == initialPoint) return -1;
         if (p2 == initialPoint) return 1;
 
-        Vector2D v1 = new Vector2D(initialPoint, p1);
-        Vector2D v2 = new Vector2D(initialPoint, p2);
+        Vector v1 = new Vector(initialPoint, p1);
+        Vector v2 = new Vector(initialPoint, p2);
 
         if (Math.abs(v1.referenceAngle() - v2.referenceAngle()) < 1e-4) {
           return Double.compare(v1.magnitude(), v2.magnitude());
@@ -507,7 +586,7 @@ class ConvexHullSolver {
     initialPoints = new PriorityQueue<>(numPoints, getLowerLeftComparator());
   }
 
-  public void addPoint (Point2D point) {
+  public void addPoint (Point point) {
     initialPoints.add(point);
   }
 ```
@@ -515,13 +594,13 @@ class ConvexHullSolver {
 <div class="page-break"></div>
 
 ```java
-  public Stack<Point2D> solve () {
+  public Stack<Point> solve () {
     sortPoints();
 
-    Stack<Point2D> pointStack = new Stack<>();
+    Stack<Point> pointStack = new Stack<>();
 
     if (sortedPoints.size() <= 3) {
-      List<Point2D> points = new ArrayList<>(sortedPoints);
+      List<Point> points = new ArrayList<>(sortedPoints);
 
       if (points.get(0).isStraightLineTo(points.get(1), points.get(2))) {
         pointStack.add(points.get(0));
@@ -537,9 +616,9 @@ class ConvexHullSolver {
     pointStack.push(sortedPoints.poll());
 
     while (!sortedPoints.isEmpty()) {
-      Point2D endPoint = sortedPoints.poll();
-      Point2D midPoint = pointStack.pop();
-      Point2D prevPoint = pointStack.pop();
+      Point endPoint = sortedPoints.poll();
+      Point midPoint = pointStack.pop();
+      Point prevPoint = pointStack.pop();
 
       while (!prevPoint.isRightTurn(midPoint, endPoint)) {
         if (pointStack.isEmpty()) {
@@ -704,11 +783,11 @@ public class hackpack {
 
   public static void testConvexHull () {
     ConvexHullSolver solver = new ConvexHullSolver(5);
-    List<Point2D> points = new ArrayList<>();
+    List<Point> points = new ArrayList<>();
 
-    Point2D topLeft   = new Point2D(2, 0), topRight   = new Point2D(2, 2),
-            lowerLeft = new Point2D(0, 0), lowerRight = new Point2D(0, 2),
-            middle    = new Point2D(1, 1);
+    Point topLeft   = new Point(2, 0), topRight   = new Point(2, 2),
+            lowerLeft = new Point(0, 0), lowerRight = new Point(0, 2),
+            middle    = new Point(1, 1);
 
     solver.addPoint(lowerLeft);
     solver.addPoint(lowerRight);
@@ -716,7 +795,7 @@ public class hackpack {
     solver.addPoint(topRight);
     solver.addPoint(middle);
 
-    Stack<Point2D> hull = solver.solve();
+    Stack<Point> hull = solver.solve();
 
     assertContains(hull, lowerLeft);
     assertContains(hull, lowerRight);
