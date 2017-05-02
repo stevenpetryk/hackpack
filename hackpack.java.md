@@ -656,7 +656,11 @@ class NetworkFlow {
     }
     return flow;
   }
+```
 
+<div class="page-break"></div>
+
+```java
   // Need tailored BFS for Edmond Karp algorithm.
   // Used to find shortest augmenting path.
   public static int ekBFS() {
@@ -746,7 +750,9 @@ class MCM {
 
 <div class="page-break"></div>
 
-# Longest Common Subsequence
+# Dynamic Programming
+
+## Longest Common Subsequence
 ```java
 class LCS {
   public static int longestCommonSubsequenceLength (String x, String y) {
@@ -770,9 +776,7 @@ class LCS {
 }
 ```
 
-<div class="page-break"></div>
-
-# Knapsack DP
+## Knapsack
 
 ```java
 class Knapsack {
@@ -798,7 +802,88 @@ class Knapsack {
 
 <div class="page-break"></div>
 
-# Line-Line Intersection
+## "Dinner" Example
+
+```java
+class dinner {
+  static long[] memo;
+
+  // public static void main(String[] args) {
+  //   ...fills up the memo table
+  // }
+
+  public static long numSols (int total) {
+    if (total < 0) {
+      return 0;
+    }
+
+    if (memo[total] != -1) {
+      return memo[total];
+    }
+
+    if (total == 0) {
+      return 1;
+    }
+
+    long solsWith2 = numSols(total - 2);
+    long solsWith5 = numSols(total - 5);
+    long solsWith10 = numSols(total - 10);
+
+    return memo[total] = solsWith2 + solsWith5 + solsWith10;
+  }
+}
+```
+
+<div class="page-break"></div>
+
+## "Stick" example
+
+```java
+class sticks {
+  public static int[] subSticks;
+  public static int[][] joinSizes;
+  public static int[][] memo;
+
+  // public static void main (String[] args) {
+  //   ...
+  //   
+  //   for (int i = 0; i < numSubsticks; i++) {
+  //     joinSizes[i][i] = subSticks[i];
+  //
+  //     for (int j = i + 1; j < numSubsticks; j++) {
+  //       joinSizes[i][j] = joinSizes[i][j-1] + subSticks[j];
+  //     }
+  //   }
+  //   
+  //   ...
+  // }
+
+  public static int solve(int start, int end) {
+    if (start == end) return 0;
+    if (memo[start][end] != -1) return memo[start][end];
+
+    int res = Integer.MAX_VALUE;
+
+    for (int split = start; split < end; split++) {
+      int leftCost = solve(start, split);
+      int rightCost = solve(split + 1, end);
+
+      int leftSize = joinSizes[start][split];
+      int rightSize = joinSizes[split + 1][end];
+
+      res = Math.min(res, leftCost + rightCost + leftSize + rightSize);
+    }
+
+    return memo[start][end] = res;
+  }
+}
+```
+
+<div class="page-break"></div>
+
+# Intersection tests
+
+## Line-Line Intersection
 
 ```java
 class LineLineIntersection {
@@ -809,9 +894,7 @@ class LineLineIntersection {
 }
 ```
 
-<div class="page-break"></div>
-
-# Line-Plane Intersection
+## Line-Plane Intersection
 
 ```java
 class LinePlaneIntersection {
