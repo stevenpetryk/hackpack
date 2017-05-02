@@ -205,7 +205,7 @@ class Plane {
 
 <div class="page-break"></div>
 
-# Permutation Generation
+# Combination Generation
 
 Example: print out all alphabetic strings of a given length.
 
@@ -234,7 +234,34 @@ class WordInventor {
 
 <div class="page-break"></div>
 
-# Combination Generation
+# Permutation Generation
+```java
+class Permuter {
+  public static <T> List<List<T>> permute (List<T> items) {
+    return permute(items, new ArrayList<>());
+  }
+
+  public static <T> List<List<T>> permute (List<T> items, List<T> accumulator) {
+    List<List<T>> results = new ArrayList<>();
+
+    if (items.isEmpty()) {
+      results.add(accumulator);
+      return results;
+    }
+
+    for (T item : items) {
+      List<T> itemsCopy = new ArrayList<>(items);
+      List<T> accumulatorCopy = new ArrayList<>(accumulator);
+
+      accumulatorCopy.add(item);
+      itemsCopy.remove(item);
+      results.addAll(permute(itemsCopy, accumulatorCopy));
+    }
+
+    return results;
+  }
+}
+```
 <div class="page-break"></div>
 
 <!--
@@ -759,6 +786,7 @@ public class hackpack {
 
   public static void main (String args[]) {
     testCombinationGeneration();
+    testPermutationGeneration();
     testGCD();
     testLCM();
     testDisjointSet();
@@ -780,6 +808,14 @@ public class hackpack {
   public static void testCombinationGeneration () {
     List<String> results = WordInventor.generateCombinations(3);
     assertEqual(results.size(), (int)Math.pow(26, 3));
+  }
+
+  public static void testPermutationGeneration () {
+    List<Integer> items = new ArrayList<>();
+    items.add(1); items.add(2); items.add(3); items.add(4); items.add(5);
+
+    List<List<Integer>> results = Permuter.permute(items);
+    assertEqual(results.size(), 120); // 5!
   }
 
   public static void testGCD () {
