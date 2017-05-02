@@ -486,6 +486,43 @@ class BFS {
 <div class="page-break"></div>
 
 # Topological Sort
+
+```java
+class TopologicalSort {
+  public static ArrayList<Integer> sort(ArrayList<ArrayList<Node>> adjList) {
+    ArrayList<Integer> sorted = new ArrayList<Integer>();
+    int[] inDegrees = new int[adjList.size()];
+    Arrays.fill(inDegrees, 0);
+    Queue<Integer> q = new LinkedList<Integer>();
+
+    for(int i = 0; i < adjList.size(); i++)
+      for(int j = 0; j < adjList.get(i).size(); j++)
+        inDegrees[adjList.get(i).get(j).value]++;
+
+    for(int i = 0; i < inDegrees.length; i++)
+      if(inDegrees[i] == 0)
+        q.offer(i);
+
+    while(!q.isEmpty()) {
+      int currNodeVal = q.poll();
+      sorted.add(currNodeVal);
+      for(Node n : adjList.get(currNodeVal)) {
+        inDegrees[n.value]--;
+        if(inDegrees[n.value] == 0)
+          q.offer(n.value);
+      }
+    }
+
+    if(sorted.size() < adjList.size()) {
+      System.out.println("Warning: Graph contains a cycle!");
+      return sorted;
+    }
+    else
+      return sorted;
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Floyd-Warshall's Algorithm
@@ -590,9 +627,123 @@ class BellmanFord {
 <div class="page-break"></div>
 
 # Network Flow
+```java
+class NetworkFlow {
+  static int numNodes;
+  static int[][] capMat;
+  static int source;
+  static int sink;
+
+  // Takes pre-filled adjacency matrix denoting capacities with source node
+  // at n  and sink node at n - 1.
+  public static int edmondsKarp(int[][] capacityMatrix) {
+    numNodes = capacityMatrix.length;
+    capMat = capacityMatrix;
+    source = numNodes - 2;
+    sink = numNodes - 1;
+
+    return ek();
+  }
+
+  public static int ek() {
+    int flow = 0;
+    while(true) {
+      int residual = ekBFS();
+      if(residual == 0)
+        break;
+
+      flow += residual;
+    }
+    return flow;
+  }
+
+  // Need tailored BFS for Edmond Karp algorithm.
+  // Used to find shortest augmenting path.
+  public static int ekBFS() {
+    int[] min = new int[numNodes];
+    int[] previous = new int[numNodes];
+    Queue<Integer> q = new LinkedList<Integer>();
+    min[source] = (int) 1e9;
+    Arrays.fill(previous, -1);
+    previous[source] = source;
+    q.offer(source);
+
+    while(!q.isEmpty()) {
+      int currNode = q.poll();
+      if(currNode == sink)
+        break;
+
+      for(int i = 0; i < numNodes - 2; i++) {
+        if(previous[i] == -1 && capMat[currNode][i] > 0) {
+          previous[i] = currNode;
+          min[i] = Math.min(capMat[currNode][i], min[currNode]);
+          q.offer(i);
+        }
+      }
+    }
+
+    if(min[sink] == 0)
+      return 0;
+
+    int node1 = previous[sink];
+    int node2 = sink;
+    int flow = min[sink];
+
+    while(node2 != source) {
+      capMat[node1][node2] -= flow;
+      capMat[node2][node1] += flow;
+      node2 = node1;
+      node1 = previous[node1];
+    }
+
+    return flow;
+  }
+}
+```
 <div class="page-break"></div>
 
 # Matrix Chain Multiplication
+
+```java
+class MCM {
+  static int[][] memo;
+
+  // matrices array of form {a, b, c, d} (n = 4) such that   
+  // there are n - 1 = 3 matrices represented with dimensions:
+  // (a x b), (b x c), (c x d) -- start initially 1, end = n - 1.
+  public static int minMults(int[] matrices) {
+    memo = new int[matrices.length][matrices.length];
+    for(int i = 0; i < matrices.length - 1; i++) {
+      Arrays.fill(memo[i], -1);
+    }
+
+    return minMults(matrices, 1, matrices.length - 1);
+  }
+
+  public static int minMults(int[] matrices, int start, int end) {
+    int dim = matrices[start] * 100 + matrices[end];
+    if(memo[start][end] != -1)
+      return memo[start][end];
+
+    if(start == end)
+      return 0;
+
+    int min = (int) 1e9;
+    for(int i = start; i < end; i++) {
+      int currCount = minMults(matrices, start, i) +
+              minMults(matrices, i + 1, end) +
+              matrices[start - 1] * matrices[i] * matrices[end];
+
+      if(currCount < min)
+        min = currCount;
+    }
+
+    memo[start][end] = min;
+    return min;
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Longest Common Subsequence
@@ -688,6 +839,29 @@ class LinePlaneIntersection {
 <div class="page-break"></div>
 
 # Polygon Area
+```java
+class PolygonArea {
+  // Shape must be made of points in either clockwise or
+  // counter-clockwise order (cannot be self-intersecting).
+  public static double getArea2D(ArrayList<Point> shape) {
+    double area = 0;
+    Point curr;
+    Point next;
+
+    for(int i = 0; i < shape.size(); i++) {
+      curr = shape.get(i);
+      if(i == shape.size() - 1)
+        next = shape.get(0);
+      else
+        next = shape.get(i + 1);
+
+      area += 0.5 * (next.x - curr.x) * (next.y + curr.y);
+    }
+    return Math.abs(area);
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Convex Hull
@@ -798,6 +972,44 @@ class ConvexHullSolver {
 <div class="page-break"></div>
 
 # Point in Polygon
+
+```java
+class PointInPolygon {
+  // Shape must be made of points in either clockwise or
+  // counter-clockwise order (cannot be self-intersecting).
+  public static int inPolygon(Point p, ArrayList<Point> shape) {
+    double errorFactor = 1e-7;
+    double angleTotal = 0;
+    Vector curr;
+    Vector next;
+
+    for(int i = 0; i < shape.size(); i++) {
+      if(p.equals(shape.get(i)))
+        return 1; // Point on vertex of polygon
+
+      curr = new Vector(p, shape.get(i));
+      if(i == shape.size() - 1)
+        next = new Vector(p, shape.get(0));
+      else
+        next = new Vector(p, shape.get(i + 1));
+
+      double angle = curr.angle(next);
+      if(!(Math.abs(angle - Math.PI) < errorFactor))
+        angleTotal += angle;
+    }
+    angleTotal = Math.abs(angleTotal);
+
+    if(Math.abs(angleTotal - (2 * Math.PI)) < errorFactor)
+      return 0; // Point in polygon
+    else if(Math.abs(angleTotal - (Math.PI)) < errorFactor)
+      return 1; // Point on edge of polygon
+    else
+      return 2; // Point outside of polygon
+
+  }
+}
+```
+
 <div class="page-break"></div>
 
 # Tests
