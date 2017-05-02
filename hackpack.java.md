@@ -13,6 +13,18 @@ import java.util.*;
 ```
 -->
 
+<div class="title-page">
+
+# Hackpack
+
+**Team Fireball**
+
+Lara Aydin, Isaac Ehlers, Steven Petryk
+
+</div>
+
+<div class="page-break"></div>
+
 # General Programming
 
 ## Comparable
@@ -485,7 +497,7 @@ class BFS {
 
 <div class="page-break"></div>
 
-# Topological Sort
+## Topological Sort
 
 ```java
 class TopologicalSort {
@@ -525,7 +537,7 @@ class TopologicalSort {
 
 <div class="page-break"></div>
 
-# Floyd-Warshall's Algorithm
+## Floyd-Warshall's Algorithm
 
 ```java
 
@@ -555,9 +567,33 @@ class FloydWarshalls {
 
 ```
 
+## Bellman Ford's Algorithm
+```java
+class BellmanFord {
+  final public static int oo = (int)10e9;
+
+  public static Map<Node, Integer> distances(List<Edge<Node>> graph, int numVertices, Node source) {
+    Map<Node, Integer> estimates = new HashMap<>(numVertices);
+    estimates.put(source, 0);
+
+    for (int i = 0; i < numVertices - 1; i++) {
+      for (Edge<Node> edge : graph) {
+        if (estimates.getOrDefault(edge.from, oo) + edge.weight < estimates.getOrDefault(edge.node, oo)) {
+          estimates.put(edge.node, estimates.get(edge.from) + edge.weight);
+        }
+      }
+
+    }
+
+    return estimates;
+  }
+}
+
+```
+
 <div class="page-break"></div>
 
-# Dijkstra's Algorithm
+## Dijkstra's Algorithm
 ```java
 class Dijkstras {
   public static LinkedList<Vertex> dijkstras(int source, int[][] matrix) {
@@ -599,34 +635,10 @@ class Dijkstras {
   }
 }
 ```
+
 <div class="page-break"></div>
 
-# Bellman Ford's Algorithm
-```java
-class BellmanFord {
-  final public static int oo = (int)10e9;
-
-  public static Map<Node, Integer> distances(List<Edge<Node>> graph, int numVertices, Node source) {
-    Map<Node, Integer> estimates = new HashMap<>(numVertices);
-    estimates.put(source, 0);
-
-    for (int i = 0; i < numVertices - 1; i++) {
-      for (Edge<Node> edge : graph) {
-        if (estimates.getOrDefault(edge.from, oo) + edge.weight < estimates.getOrDefault(edge.node, oo)) {
-          estimates.put(edge.node, estimates.get(edge.from) + edge.weight);
-        }
-      }
-
-    }
-
-    return estimates;
-  }
-}
-
-```
-<div class="page-break"></div>
-
-# Network Flow
+## Network Flow
 ```java
 class NetworkFlow {
   static int numNodes;
@@ -656,11 +668,7 @@ class NetworkFlow {
     }
     return flow;
   }
-```
 
-<div class="page-break"></div>
-
-```java
   // Need tailored BFS for Edmond Karp algorithm.
   // Used to find shortest augmenting path.
   public static int ekBFS() {
@@ -704,9 +712,10 @@ class NetworkFlow {
   }
 }
 ```
-<div class="page-break"></div>
 
-# Matrix Chain Multiplication
+# Dynamic Programming
+
+## Matrix Chain Multiplication
 
 ```java
 class MCM {
@@ -749,8 +758,6 @@ class MCM {
 ```
 
 <div class="page-break"></div>
-
-# Dynamic Programming
 
 ## Longest Common Subsequence
 ```java
@@ -921,7 +928,9 @@ class LinePlaneIntersection {
 ```
 <div class="page-break"></div>
 
-# Polygon Area
+# Geometry
+
+## Polygon Area
 ```java
 class PolygonArea {
   // Shape must be made of points in either clockwise or
@@ -947,7 +956,7 @@ class PolygonArea {
 
 <div class="page-break"></div>
 
-# Convex Hull
+## Convex Hull
 
 ```java
 class ConvexHullSolver {
@@ -994,11 +1003,7 @@ class ConvexHullSolver {
   public void addPoint (Point point) {
     initialPoints.add(point);
   }
-```
 
-<div class="page-break"></div>
-
-```java
   public Stack<Point> solve () {
     sortPoints();
 
@@ -1054,7 +1059,7 @@ class ConvexHullSolver {
 
 <div class="page-break"></div>
 
-# Point in Polygon
+## Point in Polygon
 
 ```java
 class PointInPolygon {
@@ -1096,6 +1101,13 @@ class PointInPolygon {
 <div class="page-break"></div>
 
 # Tests
+
+Dr. Guha, if you'd like to test the hackpack, all of this code can be found on
+[GitHub](https://github.com/stevenpetryk/hackpack).
+
+To run these tests, you can clone the repository, and simply run `make test`. This will compile
+the example code in the hackpack (it runs a shell script that strips away everything other than
+Java code, and then compiles the result). This is how we tested our code along the way.
 
 ```java
 public class hackpack {

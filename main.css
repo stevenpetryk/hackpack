@@ -33,6 +33,13 @@ h1, h2, h3, h4 {
   page-break-after: always;
 }
 
+.title-page {
+  margin: 0 auto;
+  margin-top: 4.5in;
+  text-align: center;
+  max-width: 400px;
+}
+
 code {
   font-family: "Source Code Pro";
   font-size: 0.8em;
