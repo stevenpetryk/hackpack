@@ -494,6 +494,47 @@ class FloydWarshalls {
 <div class="page-break"></div>
 
 # Dijkstra's Algorithm
+```java
+class Dijkstras {
+  public static LinkedList<Vertex> dijkstras(int source, int[][] matrix) {
+    int[] dist = new int[matrix.length];
+    boolean[] visited = new boolean[matrix.length];
+    int numVisited = 0;
+    PriorityQueue<Vertex> queue = new PriorityQueue<>();
+    LinkedList<Vertex> path = new LinkedList<>();
+
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[source] = 0;
+
+
+    for(int i = 0; i < matrix.length; i++)
+      queue.add(new Vertex(i, dist[i]));
+
+    while (!queue.isEmpty() && numVisited < matrix.length) {
+      Vertex vertex = queue.remove();
+      if(visited[vertex.id]) continue;
+      visited[vertex.id] = true;
+      path.add(vertex);
+
+      for(int i = 0; i < matrix.length; i++) {
+        if(matrix[vertex.id][i] > 0 && !visited[i] && dist[vertex.id] + matrix[vertex.id][i] < dist[i]) {
+          dist[i] = dist[vertex.id] + matrix[vertex.id][i];
+					queue.add(new Vertex(i, dist[i]));
+        }
+      }
+    }
+
+    return path;
+  }
+
+  static class Vertex {
+    int id; int distance;
+    public Vertex (int _id, int _distance) {
+      id = _id; distance = _distance;
+    }
+  }
+}
+```
 <div class="page-break"></div>
 
 # Bellman Ford's Algorithm
@@ -726,6 +767,7 @@ public class hackpack {
     testDFS();
     testBFS();
     testFloydWarshalls();
+    testDijkstras();
     testLCS();
     testKnapsack();
     testConvexHull();
@@ -842,6 +884,10 @@ public class hackpack {
               {3, -1, 1, 0}};
 
     assertArraysEqual(FloydWarshalls.floydwarshalls(matrix), result);
+  }
+
+  public static void testDijkstras() {
+    int[][] matrix = new int[9][9];
   }
 
   public static void testLCS () {
