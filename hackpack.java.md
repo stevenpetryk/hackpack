@@ -86,17 +86,17 @@ class Point {
 
 ```java
 class Vector {
-	public double x, y, z;
+  public double x, y, z;
 
   public Vector(double _x, double _y) {
     this(_x, _y, 0);
   }
 
-	public Vector(double _x, double _y, double _z) {
-		x = _x;
-		y = _y;
-		z = _z;
-	}
+  public Vector(double _x, double _y, double _z) {
+    x = _x;
+    y = _y;
+    z = _z;
+  }
 
   public Vector (Point start, Point end) {
     x = end.x - start.x;
@@ -107,13 +107,13 @@ class Vector {
     return this.x * other.x + this.y * other.y + this.z * other.z;
   }
 
-	public Vector crossProduct(Vector other) {
-		return new Vector((y * other.z) - (other.y * z), (z * other.x) - (other.z * x), (x * other.y) - (other.x * y));
-	}
+  public Vector crossProduct(Vector other) {
+  return new Vector((y * other.z) - (other.y * z), (z * other.x) - (other.z * x), (x * other.y) - (other.x * y));
+  }
 
-	public double magnitude() {
-		return Math.sqrt((x * x) + (y * y) + (z * z));
-	}
+  public double magnitude() {
+    return Math.sqrt((x * x) + (y * y) + (z * z));
+  }
 
   public double angle(Vector other) {
     return Math.acos(this.dot(other) / magnitude() / other.magnitude());
@@ -183,23 +183,23 @@ class Line {
 }
 
 class Plane {
-	public Point a, b, c;
-	public Vector normalVector;
-	public double distanceToOrigin;
+  public Point a, b, c;
+  public Vector normalVector;
+  public double distanceToOrigin;
 
-	public Plane(Point _a, Point _b, Point _c) {
-		a = _a;
-		b = _b;
-		c = _c;
-		Vector v1 = a.getVector(b);
-		Vector v2 = a.getVector(c);
-		normalVector = v1.crossProduct(v2);
-		distanceToOrigin = (normalVector.x * a.x) + (normalVector.y * a.y) + (normalVector.z * a.z);
-	}
+  public Plane(Point _a, Point _b, Point _c) {
+    a = _a;
+    b = _b;
+    c = _c;
+    Vector v1 = a.getVector(b);
+    Vector v2 = a.getVector(c);
+    normalVector = v1.crossProduct(v2);
+    distanceToOrigin = (normalVector.x * a.x) + (normalVector.y * a.y) + (normalVector.z * a.z);
+  }
 
-	public boolean onPlane(Point p) {
-		return (normalVector.x * p.x) + (normalVector.y * p.y) + (normalVector.z * p.z) == distanceToOrigin;
-	}
+  public boolean onPlane(Point p) {
+    return (normalVector.x * p.x) + (normalVector.y * p.y) + (normalVector.z * p.z) == distanceToOrigin;
+  }
 }
 ```
 
@@ -498,14 +498,14 @@ class FloydWarshalls {
     int[][] sp = new int[n][n];
 
     for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++)
-				sp[i][j] = (i == j) ? 0 : matrix[i][j];
+      for (int j = 0; j < n; j++)
+        sp[i][j] = (i == j) ? 0 : matrix[i][j];
 
     // Floyd-Warshall's    
     for (int k = 1; k <= n; k++)
-			for (int i = 0; i < n; i++)
-				for (int j = 0; j < n; j++)
-					sp[i][j] = Math.min(sp[i][j], sp[i][k-1] + sp[k-1][j]);
+      for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+          sp[i][j] = Math.min(sp[i][j], sp[i][k-1] + sp[k-1][j]);
 
     // Negative cycle detection.
     for (int i = 0; i < n; i++)
@@ -546,7 +546,7 @@ class Dijkstras {
       for(int i = 0; i < matrix.length; i++) {
         if(matrix[vertex.id][i] > 0 && !visited[i] && dist[vertex.id] + matrix[vertex.id][i] < dist[i]) {
           dist[i] = dist[vertex.id] + matrix[vertex.id][i];
-					queue.add(new Vertex(i, dist[i]));
+          queue.add(new Vertex(i, dist[i]));
         }
       }
     }
@@ -565,6 +565,28 @@ class Dijkstras {
 <div class="page-break"></div>
 
 # Bellman Ford's Algorithm
+```java
+class BellmanFord {
+  final public static int oo = (int)10e9;
+
+  public static Map<Node, Integer> distances(List<Edge<Node>> graph, int numVertices, Node source) {
+    Map<Node, Integer> estimates = new HashMap<>(numVertices);
+    estimates.put(source, 0);
+
+    for (int i = 0; i < numVertices - 1; i++) {
+      for (Edge<Node> edge : graph) {
+        if (estimates.getOrDefault(edge.from, oo) + edge.weight < estimates.getOrDefault(edge.node, oo)) {
+          estimates.put(edge.node, estimates.get(edge.from) + edge.weight);
+        }
+      }
+
+    }
+
+    return estimates;
+  }
+}
+
+```
 <div class="page-break"></div>
 
 # Network Flow
